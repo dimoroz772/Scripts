@@ -92,34 +92,40 @@ a {
  <br/>
 
 <style>
-:root {
-  --button-height: 60px;
-}
+html, body
+	height: 100%
 
-html {
-  box-sizing: border-box;
-  height: 100%;
-}
+body
+	display: flex
+	justify-content: center
+	align-items: center
+	background: #FAFAFA
 
-.Button {
-  background: 4px solid white;
-  border: none;
-  display: inline-block;
-  height: var(--button-height);
-  overflow: hidden;
-  padding: 0 40px;
-  position: relative;
-}
-
-.Button,
-svg {
-  cursor: pointer;
-  font-family: 'Roboto';
-  font-size: 24px;
-  text-transform: uppercase;
-}
+button
+	padding: 20px 40px
+	background: none
+	border: none
+	position: relative
+	text-transform: uppercase
+	font-weight: bold
+	letter-spacing: 3px
+	cursor: pointer
+	&:after, &:before
+		content: ''
+		position: absolute
+		top: 0
+		left: 0
+		bottom: 0
+		right: 0
+		border: 2px solid #000
+		transition: transform .2s 
+	&:after
+		transform: translate(3px, 3px)	
+	&:before
+		transform: translate(-3px, -3px)
+	&:hover
+		&:after, &:before
+			transform: translate(0)
 </style>
 
-<button class="Button js-button">
-  Hover over me
-</button>
+<button>Great hover animation</button>
