@@ -1,1 +1,216 @@
-
+<head>
+  <title>Setting up automated backup of active network equipment configurations</title>
+  <link rel="shortcut icon" href="./bash.png" type="image/png">
+</head>
+<style>
+body{
+    background-image: url('Fon_Scripts.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+}
+a {
+    text-decoration: none;
+}
+</style>
+<style> 
+table{
+border: 1px black solid;
+}
+th, td {
+   border: 1px solid grey;
+}
+</style>
+<style>
+    button {
+    position: static;
+    border: 1px solid #808080;
+    font-size: 18px;
+    background-color: rgba(28,28,28,0);
+    transition: 0.5s;
+    }
+    button:hover {
+    background-color: #ff0000;
+    }
+</style>
+ <br/>
+<p align="Center">
+<img src="./bash.png" width="150" height="150"/>
+</p><br/>
+<h1 align="Center" style="color:grey"><i>Setting up automated backup of active network equipment configurations</i></h1>
+<html>
+<body>
+<div align="Center">
+<table>
+ <thead>
+  <tr>
+   <th style="color:#FF0000" colspan="2" align="Left">#!/bin/bash<br/>
+    #Starting the tftp service<br/>
+    systemctl start tftp.service<br/>
+    <br/>
+    #Saving switches, routers and firewalls settings<br/>
+    set -x<br/>
+    #Write memory and backuping ZyXEL GS2220-28HP (IP address:10.10.10.81):<br/>
+    DATE="$(date +%Y-%m-%d)"<br/>
+    USER="admin"<br/>
+    PASSWD="P@ssw0rD"<br/>
+    LOG="telnnet_conn.log"<br/>
+    HOSTS="<br/>
+    10.10.10.81<br/>
+    "<br/>
+    for H in $HOSTS<br/>
+    do<br/>
+    echo START SCRIPT: >> $LOG<br/>
+    date +%x-%R >> $LOG<br/>
+    (<br/>
+    sleep 5;<br/>
+    echo -en "$USER\r";<br/>
+    sleep 5;<br/>
+    echo -en "$PASSWD\r";<br/>
+    sleep 5;<br/>
+    echo -en "write memory\r";<br/>
+    sleep 60;<br/>
+    echo -en "copy running-config tftp 10.10.10.10 ZyXEL_GS2220-28HP_10.10.10.81_$DATE\r";<br/>
+    sleep 60;<br/>
+    echo -en "exit\r";<br/>
+    sleep 1;<br/>
+    ) | telnet $H >> $LOG<br/>
+    echo ========================= >> $LOG<br/>
+    done<br/>
+    <br/>
+    #Write memory and backuping ZyXEL XGS4600-32 (IP address:10.10.10.82):<br/>
+    DATE="$(date +%Y-%m-%d)"<br/>
+    USER="admin"<br/>
+    PASSWD="P@ssw0rD"<br/>
+    LOG="telnnet_conn.log"<br/>
+    HOSTS="<br/>
+    10.10.10.82<br/>
+    "<br/>
+    for H in $HOSTS<br/>
+    do<br/>
+    echo START SCRIPT: >> $LOG<br/>
+    date +%x-%R >> $LOG<br/>
+    (<br/>
+    sleep 5;
+    echo -en "$USER\r";<br/>
+    sleep 5;<br/>
+    echo -en "$PASSWD\r";<br/>
+    sleep 5;<br/>
+    echo -en "write memory\r";<br/>
+    sleep 60;<br/>
+    echo -en "copy running-config tftp 10.10.10.10 ZyXEL_XGS4600-32_10.10.10.82_$DATE\r";<br/>
+    sleep 60;<br/>
+    echo -en "exit\r";<br/>
+    sleep 1;<br/>
+    ) | telnet $H >> $LOG<br/>
+    echo ========================= >> $LOG<br/>
+    done<br/>
+    <br/>
+    #Write memory and backuping ZyXEL GS2210-24 (IP address:10.10.10.83):<br/>
+    DATE="$(date +%Y-%m-%d)"<br/>
+    USER="admin"<br/>
+    PASSWD="P@ssw0rD"<br/>
+    LOG="telnnet_conn.log"<br/>
+    HOSTS="<br/>
+    10.10.10.83<br/>
+    "<br/>
+    for H in $HOSTS<br/>
+    do<br/>
+    echo START SCRIPT: >> $LOG<br/>
+    date +%x-%R >> $LOG<br/>
+    (<br/>
+    sleep 5;<br/>
+    echo -en "$USER\r";<br/>
+    sleep 5;<br/>
+    echo -en "$PASSWD\r";<br/>
+    sleep 5;<br/>
+    echo -en "write memory\r";<br/>
+    sleep 60;<br/>
+    echo -en "copy running-config tftp 10.10.10.10 ZyXEL_GS2210-24_10.10.10.83_$DATE\r";<br/>
+    sleep 60;<br/>
+    echo -en "exit\r";<br/>
+    sleep 1;<br/>
+    ) | telnet $H >> $LOG<br/>
+    echo ========================= >> $LOG<br/>
+    done<br/>
+    <br/>
+    #Write memory and backuping D-Link DGS-1210-52 Gigabit Ethernet Switch (IP address:10.10.10.84):<br/>
+    DATE="$(date +%Y-%m-%d)"<br/>
+    USER="admin"<br/>
+    PASSWD="P@ssw0rD"<br/>
+    LOG="telnnet_conn.log"<br/>
+    HOSTS="<br/>
+    10.10.10.84<br/>
+    "<br/>
+    for H in $HOSTS<br/>
+    do<br/>
+    echo START SCRIPT: >> $LOG<br/>
+    date +%x-%R >> $LOG<br/>
+    (<br/>
+    sleep 5;<br/>
+    echo -en "$USER\r";<br/>
+    sleep 5;<br/>
+    echo -en "$PASSWD\r";<br/>
+    sleep 5;<br/>
+    echo -en "save\r";<br/>
+    sleep 60;<br/>
+    echo -en "upload cfg_toTFTP 10.10.10.10 D-Link_DGS-1210-52_10.10.10.84_$DATE\r";<br/>
+    sleep 60;<br/>
+    echo -en "logout\r";<br/>
+    sleep 1;<br/>
+    ) | telnet $H >> $LOG<br/>
+    echo ========================= >> $LOG<br/>
+    done<br/>
+    <br/>
+    #Write memory and backuping D-Link DGS-1210-52/C1 (IP address:10.10.10.85):<br/>
+    DATE="$(date +%Y-%m-%d)"<br/>
+    USER="admin"<br/>
+    PASSWD="P@ssw0rD"<br/>
+    LOG="telnnet_conn.log"<br/>
+    HOSTS="<br/>
+    10.10.10.85<br/>
+    "<br/>
+    for H in $HOSTS<br/>
+    do<br/>
+    echo START SCRIPT: >> $LOG<br/>
+    date +%x-%R >> $LOG<br/>
+    (<br/>
+    sleep 5;<br/>
+    echo -en "$USER\r";<br/>
+    sleep 5;<br/>
+    echo -en "$PASSWD\r";<br/>
+    sleep 5;<br/>
+    echo -en "save\r";<br/>
+    sleep 60;<br/>
+    echo -en "upload cfg_toTFTP 10.10.10.10 D-Link_DGS-1210-52_C1_10.10.10.85_$DATE\r";<br/>
+    sleep 60;<br/>
+    echo -en "logout\r";<br/>
+    sleep 1;<br/>
+    ) | telnet $H >> $LOG<br/>
+    echo ========================= >> $LOG<br/>
+    done<br/>
+    <br/>
+    <br/>
+    #Копирование папки tftpboot вместе со всеми конфигами на nfs-сервер:<br/>
+    cp -R /var/lib/tftpboot /mnt<br/>
+    <br/>
+    #Выдача прав<br/>
+    chmod 777 /mnt/tftpboot<br/>
+    <br/>
+    #Переименование каталога tftpboot:<br/>
+    mv /mnt/tftpboot /mnt/Backups_$(date +%d.%m.%Y)<br/>
+    <br/>
+    #Очистка каталога tftpboot:<br/>
+    rm -rf /var/lib/tftpboot/*</th>
+  </tr>
+ </thead>
+</table>
+</div>
+</body>
+</html>
+ <br/>
+<button><i><a href="https://dimoroz772.github.io/DDT4ALL/" style="color:#F0F8FF"><b>Back</b></a><br/><i/></button>
