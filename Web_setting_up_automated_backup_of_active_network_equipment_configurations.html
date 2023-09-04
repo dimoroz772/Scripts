@@ -41,14 +41,14 @@ th, td {
 <p align="Center">
 <img src="./bash.png" width="150" height="150"/>
 </p><br/>
-<h1 align="Center" style="color: rgb(255, 255, 255)"><i>Setting up automated backup of active network equipment configurations</i></h1>
+<h1 align="Center" style="color:rgb(255, 255, 255)"><i>Setting up automated backup of active network equipment configurations</i></h1>
 <html>
 <body>
 <div align="Center">
 <table>
  <thead>
   <tr>
-   <th style="color:#FF0000" colspan="2" align="Left">#!/bin/bash<br/>
+   <th style="color:#ff0000" colspan="2" align="Left">#!/bin/bash<br/>
     #Starting the tftp service<br/>
     systemctl start tftp.service<br/>
     <br/>
@@ -195,17 +195,17 @@ th, td {
     done<br/>
     <br/>
     <br/>
-    #Копирование папки tftpboot вместе со всеми конфигами на nfs-сервер:<br/>
-    cp -R /var/lib/tftpboot /mnt<br/>
+    <a style="color:#00ff15">#Копирование папки tftpboot вместе со всеми конфигами на nfs-сервер:</a><br/>
+    <a style="color:#00ff15">cp -R /var/lib/tftpboot /mnt</a><br/>
     <br/>
-    #Выдача прав<br/>
-    chmod 777 /mnt/tftpboot<br/>
+    <a style="color:#00ff15">#Выдача прав</a><br/>
+    <a style="color:#00ff15">chmod 777 /mnt/tftpboot</a><br/>
     <br/>
-    #Переименование каталога tftpboot:<br/>
-    mv /mnt/tftpboot /mnt/Backups_$(date +%d.%m.%Y)<br/>
+    <a style="color:#00ff15">#Переименование каталога tftpboot:</a><br/>
+    <a style="color:#00ff15">mv /mnt/tftpboot /mnt/Backups_$(date +%d.%m.%Y)</a><br/>
     <br/>
-    #Очистка каталога tftpboot:<br/>
-    rm -rf /var/lib/tftpboot/*</th>
+    <a style="color:#00ff15">#Очистка каталога tftpboot:</a><br/>
+    <a style="color:#00ff15">rm -rf /var/lib/tftpboot/*</a></th>
   </tr>
  </thead>
 </table>
