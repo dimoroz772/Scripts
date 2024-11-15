@@ -1,0 +1,254 @@
+<head>
+  <title>Turning off server equipment using network protocols</title>
+  <link rel="shortcut icon" href="./bash.png" type="image/png">
+</head>
+ <head>
+  <meta charset="utf-8">
+ </head>
+<style>
+.neonText1 {
+  color: #87CEFA;
+  text-shadow:
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1;
+}
+.neonText2 {
+  color: #00FF00;
+  text-shadow:
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400;
+}
+/* Additional styling */
+body{
+    background-color: black;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #cfcfcf;
+}
+a {
+    text-decoration: none;
+}
+p {
+  text-indent: 1.5em;
+  font-family: monospace;
+  font-weight: 500;
+  white-space: pre;
+  line-height: 2;
+  letter-spacing: 1px;
+}
+</style>
+<div class="container">
+<p class="neonText2">
+<a class="neonText1">#!/bin/bash
+ 
+# clear the screen</a>
+tput clear
+   
+<a class="neonText1"># Move cursor to screen location X,Y (top left is 0,0)</a>
+tput cup 3 15
+   
+<a class="neonText1"># Set a foreground colour using ANSI escape</a>
+tput setaf 1
+echo "Turning off server equipment using network protocols"
+tput sgr0
+   
+tput cup 5 15
+<a class="neonText1"># Set reverse video mode</a>
+tput rev
+tput setaf 1
+echo "S-E-R-V-E-R-S |#|#| S-H-T-1"
+tput sgr0
+   
+tput setaf 1
+tput cup 7 15
+echo "1. Windows - Server number one(10.10.10.10)"
+   
+tput setaf 1
+tput cup 9 15
+echo "2. Linux - Server number one(10.10.10.11)"
+   
+tput setaf 1
+tput cup 11 15
+echo "3. Linux - Server number two(10.10.10.12)"
+   
+tput setaf 1
+tput cup 13 15
+echo "4. Linux - Server number three(10.10.10.13)"
+   
+tput setaf 1
+tput cup 15 15
+echo "5. SHD - Cli Storage systems Fujitsu Storage ETERNUS DX200 S4(10.10.10.14)"
+   
+tput setaf 1
+tput cup 17 15
+echo "6. Linux - Server number four(10.10.10.15)"
+   
+tput setaf 1
+tput cup 19 15
+echo "7. Linux - Server number five(10.10.10.16)"
+   
+tput cup 21 15
+<a class="neonText1"># Set reverse video mode</a>
+tput rev
+tput setaf 1
+echo "F U N C T I O N S"
+tput sgr0
+ 
+tput setaf 1
+tput cup 23 15
+echo "8. SHUTDOWN ALL"
+ 
+tput setaf 1
+tput cup 25 15
+echo "9. Exit"
+ 
+<a class="neonText1"># Set bold mode</a>
+tput setaf 7
+tput bold
+tput cup 27 15
+read -p "Enter your choice: " choice
+ 
+tput clear
+tput sgr0
+tput rc
+ 
+case "$choice" in
+    "1") ssh -i /home/user/.ssh/key windowsuser@10.10.10.10 'shutdown /s'
+         ;;
+    "2") ssh -i /home/user/.ssh/key linuxuser@10.10.10.11 'shutdown'
+         ;;
+    "3") ssh -i /home/user/.ssh/key linuxuser@10.10.10.12 'shutdown'
+         ;;
+    "4") ssh -i /home/user/.ssh/key linuxuser@10.10.10.13 'shutdown'
+         ;;
+    "5") ( #Saving switches and firewall settings
+                set -x
+
+                #Shutdown SHD (IP address:10.10.10.14):
+                USER="root"
+                PASSWD="P@ssw0rD"
+                LOG="telnnet_conn.log"
+                HOSTS="
+                10.10.10.14
+                "
+                for H in $HOSTS
+                do
+                echo START SCRIPT: >> $LOG
+                date +%x-%R >> $LOG
+                (
+                sleep 5;
+                echo -en "$USER\r";
+                sleep 5;
+                echo -en "$PASSWD\r";
+                sleep 5;
+                echo -en "shutdown -mode off\r";
+                sleep 5;
+                echo -en "Y\r";
+                sleep 60;
+                echo -en "exit\r";
+                sleep 1;
+                ) | telnet $H >> $LOG
+                echo ========================= >> $LOG
+                done)
+         ;;
+    "6") ssh -i /home/user/.ssh/key linuxuser@10.10.10.15 'shutdown'
+         ;;
+    "7") ssh -i /home/user/.ssh/key linuxuser@10.10.10.16 'shutdown'
+         ;;
+    "8") ( <a class="neonText1"># 1 команда</a>
+         echo "Windows - Server number one"
+         ssh -i /home/user/.ssh/key windowsuser@10.10.10.10 'shutdown /s'
+         sleep 1  <a class="neonText1"># Пауза 1 секунда</a>
+ 
+         <a class="neonText1"># 2 команда</a>
+         echo "Linux - Server number one"
+         ssh -i /home/user/.ssh/key linuxuser@10.10.10.11 'shutdown'
+         sleep 1  <a class="neonText1"># Пауза 1 секунда</a>
+ 
+         <a class="neonText1"># 3 команда</a>
+         echo "Linux - Server number two"
+         ssh -i /home/user/.ssh/key linuxuser@10.10.10.12 'shutdown'
+         sleep 1  <a class="neonText1"># Пауза 1 секунда</a>
+ 
+         <a class="neonText1"># 4 команда</a>
+         echo "Linux - Server number three"
+         ssh -i /home/user/.ssh/key linuxuser@10.10.10.13 'shutdown'
+         sleep 1  <a class="neonText1"># Пауза 1 секунда</a>
+ 
+         <a class="neonText1"># 5 команда</a>
+         echo "Linux - Server number four"
+         ssh -i /home/user/.ssh/key linuxuser@10.10.10.15 'shutdown'
+         sleep 1  <a class="neonText1"># Пауза 1 секунда</a>
+ 
+         <a class="neonText1"># Проверка доступности адреса 10.10.10.11</a>
+         echo "Ожидание, пока адрес 10.10.10.11 перестанет отвечать на пинг"
+         while ping -c 1 10.10.10.11 &> /dev/null; do
+         sleep 1  <a class="neonText1"># Ждем 1 секунду перед следующей проверкой</a>
+         done
+         echo "Адрес 10.10.10.11 больше не отвечает. Выполняется следующая команда"
+ 
+         <a class="neonText1"># Проверка доступности адреса 10.10.10.12</a>
+         echo "Ожидание, пока адрес 10.10.10.12 перестанет отвечать на пинг"
+         while ping -c 1 10.10.10.12 &> /dev/null; do
+         sleep 1  <a class="neonText1"># Ждем 1 секунду перед следующей проверкой</a>
+         done
+         echo "Адрес 10.10.10.12 больше не отвечает. Выполняется последняя команда"
+ 
+         <a class="neonText1"># 6 команда</a>
+         echo "SHD - Cli Storage systems Fujitsu Storage ETERNUS DX200 S4"
+        ( <a class="neonText1">#Saving switches and firewall settings</a>
+          set -x
+
+          <a class="neonText1">#Shutdown SHD (IP address:10.10.10.14):</a>
+          USER="root"
+          PASSWD="P@ssw0rD"
+          LOG="telnnet_conn.log"
+          HOSTS="
+          10.10.10.14
+          "
+          for H in $HOSTS
+          do
+          echo START SCRIPT: >> $LOG
+          date +%x-%R >> $LOG
+          (
+          sleep 5;
+          echo -en "$USER\r";
+          sleep 5;
+          echo -en "$PASSWD\r";
+          sleep 5;
+          echo -en "shutdown mode -off\r";
+          sleep 5;
+          echo -en "Y\r";
+          sleep 60;
+          echo -en "exit\r";
+          sleep 1;
+          ) | telnet $H >> $LOG
+          echo ========================= >> $LOG
+          done)
+          sleep 1  <a class="neonText1"># Пауза 1 секунда</a>
+          echo "Оборудование в серверной выключено!"
+         ;;
+    "9") exit
+         ;;
+    *) echo "Wrong choice... Please try again."
+       show_main_menu
+       ;;
+esac</a>
+</p>
+</div>
