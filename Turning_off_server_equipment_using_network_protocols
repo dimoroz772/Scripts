@@ -1,195 +1,186 @@
 #!/bin/bash
- 
-# clear the screen
-tput clear
-   
-# Move cursor to screen location X,Y (top left is 0,0)
-tput cup 3 15
-   
-# Set a foreground colour using ANSI escape
-tput setaf 1
-echo "Turning off server equipment using network protocols"
-tput sgr0
-   
-tput cup 5 15
-# Set reverse video mode
-tput rev
-tput setaf 1
-echo "S-E-R-V-E-R-S |#|#| S-H-T-1"
-tput sgr0
-   
-tput setaf 1
-tput cup 7 15
-echo "1. Windows - Server number one(10.10.10.10)"
-   
-tput setaf 1
-tput cup 9 15
-echo "2. Linux - Server number one(10.10.10.11)"
-   
-tput setaf 1
-tput cup 11 15
-echo "3. Linux - Server number two(10.10.10.12)"
-   
-tput setaf 1
-tput cup 13 15
-echo "4. Linux - Server number three(10.10.10.13)"
-   
-tput setaf 1
-tput cup 15 15
-echo "5. SHD - Cli Storage systems Fujitsu Storage ETERNUS DX200 S4(10.10.10.14)"
-   
-tput setaf 1
-tput cup 17 15
-echo "6. Linux - Server number four(10.10.10.15)"
-   
-tput setaf 1
-tput cup 19 15
-echo "7. Linux - Server number five(10.10.10.16)"
-   
-tput cup 21 15
-# Set reverse video mode
-tput rev
-tput setaf 1
-echo "F U N C T I O N S"
-tput sgr0
- 
-tput setaf 1
-tput cup 23 15
-echo "8. SHUTDOWN ALL"
- 
-tput setaf 1
-tput cup 25 15
-echo "9. Exit"
- 
-# Set bold mode
-tput setaf 7
-tput bold
-tput cup 27 15
-read -p "Enter your choice: " choice
- 
-tput clear
-tput sgr0
-tput rc
- 
-case "$choice" in
-    "1") ssh -i /home/user/.ssh/key windowsuser@10.10.10.10 'shutdown /s'
-         ;;
-    "2") ssh -i /home/user/.ssh/key linuxuser@10.10.10.11 'shutdown'
-         ;;
-    "3") ssh -i /home/user/.ssh/key linuxuser@10.10.10.12 'shutdown'
-         ;;
-    "4") ssh -i /home/user/.ssh/key linuxuser@10.10.10.13 'shutdown'
-         ;;
-    "5") ( #Saving switches and firewall settings
-                set -x
 
-                #Shutdown SHD (IP address:10.10.10.14):
-                USER="root"
-                PASSWD="P@ssw0rD"
-                LOG="telnnet_conn.log"
-                HOSTS="
-                10.10.10.14
-                "
-                for H in $HOSTS
-                do
+show_main_menu() { 
+    # clear the screen
+    tput clear
+   
+    # Move cursor to screen location X,Y (top left is 0,0)
+    tput cup 3 15
+   
+    # Set a foreground colour using ANSI escape
+    tput setaf 1
+    echo "Turning off server equipment using network protocols"
+    tput sgr0
+   
+    tput cup 5 15
+    # Set reverse video mode
+    tput rev
+    tput setaf 1
+    echo "S-E-R-V-E-R-S |#|#| S-H-T-1"
+    tput sgr0
+   
+    tput setaf 1
+    tput cup 7 15
+    echo "1. Windows - Server number one(10.10.10.10)"
+   
+    tput setaf 1
+    tput cup 9 15
+    echo "2. Linux - Server number one(10.10.10.11)"
+   
+    tput setaf 1
+    tput cup 11 15
+    echo "3. Linux - Server number two(10.10.10.12)"
+   
+    tput setaf 1
+    tput cup 13 15
+    echo "4. Linux - Server number three(10.10.10.13)"
+   
+    tput setaf 1
+    tput cup 15 15
+    echo "5. SHD - Cli Storage systems Fujitsu Storage ETERNUS DX200 S4(10.10.10.14)"
+   
+    tput setaf 1
+    tput cup 17 15
+    echo "6. Linux - Server number four(10.10.10.15)"
+   
+    tput setaf 1
+    tput cup 19 15
+    echo "7. Linux - Server number five(10.10.10.16)"
+   
+    tput cup 21 15
+    # Set reverse video mode
+    tput rev
+    tput setaf 1
+    echo "F U N C T I O N S"
+    tput sgr0
+ 
+    tput setaf 1
+    tput cup 23 15
+    echo "8. SHUTDOWN ALL"
+ 
+    tput setaf 1
+    tput cup 25 15
+    echo "9. Exit"
+ 
+    # Set bold mode
+    tput setaf 7
+    tput bold
+    tput cup 27 15
+    read -p "Enter your choice: " choice
+ 
+    tput clear
+    tput sgr0
+    tput rc
+ 
+    case "$choice" in
+        "1") ssh -i /home/user/.ssh/key windowsuser@10.10.10.10 'shutdown /s'
+             ;;
+        "2") ssh -i /home/user/.ssh/key linuxuser@10.10.10.11 'shutdown'
+             ;;
+        "3") ssh -i /home/user/.ssh/key linuxuser@10.10.10.12 'shutdown'
+             ;;
+        "4") ssh -i /home/user/.ssh/key linuxuser@10.10.10.13 'shutdown'
+             ;;
+        "5") 
+            # Saving switches and firewall settings
+            set -x
+            USER="root"
+            PASSWD="P@ssw0rD"
+            LOG="telnnet_conn.log"
+            HOSTS="10.10.10.14"
+            for H in $HOSTS; do
                 echo START SCRIPT: >> $LOG
                 date +%x-%R >> $LOG
                 (
-                sleep 5;
-                echo -en "$USER\r";
-                sleep 5;
-                echo -en "$PASSWD\r";
-                sleep 5;
-                echo -en "shutdown -mode off\r";
-                sleep 5;
-                echo -en "Y\r";
-                sleep 60;
-                echo -en "exit\r";
-                sleep 1;
+                    sleep 5
+                    echo -en "$USER\r"
+                    sleep 5
+                    echo -en "$PASSWD\r"
+                    sleep 5
+                    echo -en "shutdown -mode off\r"
+                    sleep 5
+                    echo -en "Y\r"
+                    sleep 60
+                    echo -en "exit\r"
+                    sleep 1
                 ) | telnet $H >> $LOG
                 echo ========================= >> $LOG
-                done)
-         ;;
-    "6") ssh -i /home/user/.ssh/key linuxuser@10.10.10.15 'shutdown'
-         ;;
-    "7") ssh -i /home/user/.ssh/key linuxuser@10.10.10.16 'shutdown'
-         ;;
-    "8") ( # 1 команда
-         echo "Windows - Server number one"
-         ssh -i /home/user/.ssh/key windowsuser@10.10.10.10 'shutdown /s'
-         sleep 1  # Пауза 1 секунда
- 
-         # 2 команда
-         echo "Linux - Server number one"
-         ssh -i /home/user/.ssh/key linuxuser@10.10.10.11 'shutdown'
-         sleep 1  # Пауза 1 секунда
- 
-         # 3 команда
-         echo "Linux - Server number two"
-         ssh -i /home/user/.ssh/key linuxuser@10.10.10.12 'shutdown'
-         sleep 1  # Пауза 1 секунда
- 
-         # 4 команда
-         echo "Linux - Server number three"
-         ssh -i /home/user/.ssh/key linuxuser@10.10.10.13 'shutdown'
-         sleep 1  # Пауза 1 секунда
- 
-         # 5 команда
-         echo "Linux - Server number four"
-         ssh -i /home/user/.ssh/key linuxuser@10.10.10.15 'shutdown'
-         sleep 1  # Пауза 1 секунда
- 
-         # Проверка доступности адреса 10.10.10.11
-         echo "Ожидание, пока адрес 10.10.10.11 перестанет отвечать на пинг"
-         while ping -c 1 10.10.10.11 &> /dev/null; do
-         sleep 1  # Ждем 1 секунду перед следующей проверкой
-         done
-         echo "Адрес 10.10.10.11 больше не отвечает. Выполняется следующая команда"
- 
-         # Проверка доступности адреса 10.10.10.12
-         echo "Ожидание, пока адрес 10.10.10.12 перестанет отвечать на пинг"
-         while ping -c 1 10.10.10.12 &> /dev/null; do
-         sleep 1  # Ждем 1 секунду перед следующей проверкой
-         done
-         echo "Адрес 10.10.10.12 больше не отвечает. Выполняется последняя команда"
- 
-         # 6 команда
-         echo "SHD - Cli Storage systems Fujitsu Storage ETERNUS DX200 S4"
-        ( #Saving switches and firewall settings
-          set -x
+            done
+            ;;  # Закрытие case для варианта "5"
+        "6") ssh -i /home/user/.ssh/key linuxuser@10.10.10.15 'shutdown'
+             ;;
+        "7") ssh -i /home/user/.ssh/key linuxuser@10.10.10.16 'shutdown'
+             ;;
+        "8")
+            # shutdown all servers
+            echo "Windows - Server number one"
+            ssh -i /home/user/.ssh/key windowsuser@10.10.10.10 'shutdown /s'
+            sleep 1
 
-          #Shutdown SHD (IP address:10.10.10.14):
-          USER="root"
-          PASSWD="P@ssw0rD"
-          LOG="telnnet_conn.log"
-          HOSTS="
-          10.10.10.14
-          "
-          for H in $HOSTS
-          do
-          echo START SCRIPT: >> $LOG
-          date +%x-%R >> $LOG
-          (
-          sleep 5;
-          echo -en "$USER\r";
-          sleep 5;
-          echo -en "$PASSWD\r";
-          sleep 5;
-          echo -en "shutdown mode -off\r";
-          sleep 5;
-          echo -en "Y\r";
-          sleep 60;
-          echo -en "exit\r";
-          sleep 1;
-          ) | telnet $H >> $LOG
-          echo ========================= >> $LOG
-          done)
-          sleep 1  # Пауза 1 секунда
-          echo "Оборудование в серверной выключено!"
-         ;;
-    "9") exit
-         ;;
-    *) echo "Wrong choice... Please try again."
-       show_main_menu
-       ;;
-esac
+            echo "Linux - Server number one"
+            ssh -i /home/user/.ssh/key linuxuser@10.10.10.11 'shutdown'
+            sleep 1
+
+            echo "Linux - Server number two"
+            ssh -i /home/user/.ssh/key linuxuser@10.10.10.12 'shutdown'
+            sleep 1
+
+            echo "Linux - Server number three"
+            ssh -i /home/user/.ssh/key linuxuser@10.10.10.13 'shutdown'
+            sleep 1
+
+            echo "Linux - Server number four"
+            ssh -i /home/user/.ssh/key linuxuser@10.10.10.15 'shutdown'
+            sleep 1
+
+            # Wait until 10.10.10.11 is no longer reachable
+            echo "Ожидание, пока адрес 10.10.10.11 перестанет отвечать на пинг"
+            while ping -c 1 10.10.10.11 &> /dev/null; do
+                sleep 1
+            done
+            echo "Адрес 10.10.10.11 больше не отвечает. Выполняется следующая команда"
+
+            # Wait until 10.10.10.12 is no longer reachable
+            echo "Ожидание, пока адрес 10.10.10.12 перестанет отвечать на пинг"
+            while ping -c 1 10.10.10.12 &> /dev/null; do
+                sleep 1
+            done
+            echo "Адрес 10.10.10.12 больше не отвечает. Выполняется последняя команда"
+
+            # Shutdown SHD
+            echo "SHD - Cli Storage systems Fujitsu Storage ETERNUS DX200 S4"
+            set -x
+            USER="root"
+            PASSWD="P@ssw0rD"
+            LOG="telnnet_conn.log"
+            HOSTS="10.10.10.14"
+            for H in $HOSTS; do
+                echo START SCRIPT: >> $LOG
+                date +%x-%R >> $LOG
+                (
+                    sleep 5
+                    echo -en "$USER\r"
+                    sleep 5
+                    echo -en "$PASSWD\r"
+                    sleep 5
+                    echo -en "shutdown mode -off\r"
+                    sleep 5
+                    echo -en "Y\r"
+                    sleep 60
+                    echo -en "exit\r"
+                    sleep 1
+                ) | telnet $H >> $LOG
+                echo ========================= >> $LOG
+            done
+            sleep 1
+            echo "Оборудование в серверной выключено!"
+            ;;  # Закрытие case для варианта "8"
+        "9") exit ;;
+        *) echo "Wrong choice... Please try again." 
+           show_main_menu
+           ;;
+    esac  # Закрытие case
+}
+
+# Call the function to show the menu
+show_main_menu
