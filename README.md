@@ -9,3 +9,5 @@
 <i> <a href="https://github.com/dimoroz772/Scripts/blob/Website/GUI_Servers_Connections"><b>GUI Servers Connections</b></a><br/><i/>
  <br/>
 <i> <a href="https://github.com/dimoroz772/Scripts/blob/Website/Turning_off_server_equipment_using_network_protocols"><b>Turning off server equipment using network protocols</b></a><br/><i/>
+ <br/>
+<i> <a href="https://github.com/dimoroz772/Scripts/blob/Website/Checking_packages_for_integrity_and_authenticity"><b>Checking packages for integrity and authenticity</b></a><br/><i/>
