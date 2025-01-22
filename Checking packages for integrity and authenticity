@@ -1,0 +1,86 @@
+#!/bin/bash 
+
+#Execute the rpm --checksig command for all packages located in a specific repository
+
+#↓Checking the integrity of packages in the repository base7c↓
+
+find /var/www/html/repositories/redos7/base7c/ -name '*.rpm' -exec rpm --checksig {} \; > /var/www/html/Integrity_and_authenticity/Checksig_all_packages/Checksig_base7c_$(date +%Y-%m-%d).txt
+
+#↓Checking the integrity of packages in the repository updates7c↓
+
+find /var/www/html/repositories/redos7/updates7c/ -name '*.rpm' -exec rpm --checksig {} \; > /var/www/html/Integrity_and_authenticity/Checksig_all_packages/Checksig_updates7c_$(date +%Y-%m-%d).txt
+
+#↓Checking the integrity of packages in the repository kernelsc↓
+
+find /var/www/html/repositories/redos7/kernelsc/ -name '*.rpm' -exec rpm --checksig {} \; > /var/www/html/Integrity_and_authenticity/Checksig_all_packages/Checksig_kernelsc_$(date +%Y-%m-%d).txt
+
+#↓Checking the integrity of packages in the repository kernels6c↓
+
+find /var/www/html/repositories/redos7/kernels6c/ -name '*.rpm' -exec rpm --checksig {} \; > /var/www/html/Integrity_and_authenticity/Checksig_all_packages/Checksig_kernels6c_$(date +%Y-%m-%d).txt
+  
+
+#Execute the rpm -qi command for all packages located in a specific repository
+
+#↓Checking the originality of packages in the kernels6c repository↓
+
+find /var/www/html/repositories/redos7/kernels6c/ -name "*.rpm" -print0 | xargs -0 rpm -qi > /var/www/html/Integrity_and_authenticity/QI_all_packages/QI_kernels6c_$(date +%Y-%m-%d).txt
+
+#↓Checking the originality of packages in the kernelsc repository↓
+
+find /var/www/html/repositories/redos7/kernelsc/ -name "*.rpm" -print0 | xargs -0 rpm -qi > /var/www/html/Integrity_and_authenticity/QI_all_packages/QI_kernelsc_$(date +%Y-%m-%d).txt
+
+#↓Checking the originality of packages in the base7c repository↓
+  
+find /var/www/html/repositories/redos7/base7c/ -name "*.rpm" -print0 | xargs -0 rpm -qi > /var/www/html/Integrity_and_authenticity/QI_all_packages/QI_base7c_$(date +%Y-%m-%d).txt
+
+#↓Checking the originality of packages in the updates7c repository↓
+  
+find /var/www/html/repositories/redos7/updates7c/ -name "*.rpm" -print0 | xargs -0 rpm -qi > /var/www/html/Integrity_and_authenticity/QI_all_packages/QI_updates7c_$(date +%Y-%m-%d).txt
+  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#!/bin/bash
+
+#Run rpm --checksig only for new packages that are in a specific repository
+
+#↓Creating a Checksig folder with the date the command was executed↓
+
+mkdir /var/www/html/Integrity_and_authenticity/Checksig/Checksig_$(date +%Y-%m-%d)
+
+#↓Checking the integrity of new packages in the base7c repository↓
+
+find /var/www/html/repositories/redos7/base7c/ -type f -name '*.rpm' -daystart -mtime 0 -exec rpm --checksig {} \; > /var/www/html/Integrity_and_authenticity/Checksig/Checksig_$(date +%Y-%m-%d)/Checksig_base7c_$(date +%Y-%m-%d).txt
+
+#↓Checking the integrity of new packages in the updates7c repository↓
+
+find /var/www/html/repositories/redos7/updates7c/ -type f -name '*.rpm' -daystart -mtime 0 -exec rpm --checksig {} \; > /var/www/html/Integrity_and_authenticity/Checksig/Checksig_$(date +%Y-%m-%d)/Checksig_updates7c_$(date +%Y-%m-%d).txt
+
+#↓Checking the integrity of new packages in the kernelsc repository↓
+
+find /var/www/html/repositories/redos7/kernelsc/ -type f -name '*.rpm' -daystart -mtime 0 -exec rpm --checksig {} \; > /var/www/html/Integrity_and_authenticity/Checksig/Checksig_$(date +%Y-%m-%d)/Checksig_kernelsc_$(date +%Y-%m-%d).txt
+
+#↓Checking the integrity of new packages in the kernels6c repository↓
+
+find /var/www/html/repositories/redos7/kernels6c/ -type f -name '*.rpm' -daystart -mtime 0 -exec rpm --checksig {} \; > /var/www/html/Integrity_and_authenticity/Checksig/Checksig_$(date +%Y-%m-%d)/Checksig_kernels6c_$(date +%Y-%m-%d).txt
+
+#Run rpm -qi only for new packages that are in a specific repository
+
+#↓Creating a QI folder with the date the command was executed↓
+
+mkdir /var/www/html/Integrity_and_authenticity/QI/QI_$(date +%Y-%m-%d)
+
+#↓Checking the originality new of packages in the base7c repository↓
+  
+find /var/www/html/repositories/redos7/base7c/ -name "*.rpm" -type f -newermt "$(date +%Y-%m-%d)" -exec rpm -qi {} \; > /var/www/html/Integrity_and_authenticity/QI/QI_$(date +%Y-%m-%d)/QI_base7c_$(date +%Y-%m-%d).txt
+
+#↓Checking the originality new of packages in the updates7c repository↓
+
+find /var/www/html/repositories/redos7/updates7c/ -name "*.rpm" -type f -newermt "$(date +%Y-%m-%d)" -exec rpm -qi {} \; > /var/www/html/Integrity_and_authenticity/QI/QI_$(date +%Y-%m-%d)/QI_updates7c_$(date +%Y-%m-%d).txt
+
+#↓Checking the originality new of packages in the kernelsc repository↓
+
+find /var/www/html/repositories/redos7/kernelsc/ -name "*.rpm" -type f -newermt "$(date +%Y-%m-%d)" -exec rpm -qi {} \; > /var/www/html/Integrity_and_authenticity/QI/QI_$(date +%Y-%m-%d)/QI_kernelsc_$(date +%Y-%m-%d).txt
+
+#↓Checking the originality new of packages in the kernels6c repository↓
+
+find /var/www/html/repositories/redos7/kernels6c/ -name "*.rpm" -type f -newermt "$(date +%Y-%m-%d)" -exec rpm -qi {} \; > /var/www/html/Integrity_and_authenticity/QI/QI_$(date +%Y-%m-%d)/QI_kernels6c_$(date +%Y-%m-%d).txt
