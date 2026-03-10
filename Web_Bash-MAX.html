@@ -1,0 +1,194 @@
+<head>
+  <title>Bash-MAX</title>
+  <link rel="shortcut icon" href="./bash.png" type="image/png">
+</head>
+ <head>
+  <meta charset="utf-8">
+ </head>
+<style>
+.neonText1 {
+  color: #87CEFA;
+  text-shadow:
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1;
+}
+.neonText2 {
+  color: #00FF00;
+  text-shadow:
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400;
+}
+/* Additional styling */
+body{
+    background-color: black;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #cfcfcf;
+}
+a {
+    text-decoration: none;
+}
+p {
+  text-indent: 1.5em;
+  font-family: monospace;
+  font-weight: 500;
+  white-space: pre;
+  line-height: 2;
+  letter-spacing: 1px;
+}
+</style>
+<div class="container">
+<p class="neonText2">
+<a class="neonText1">#!/bin/bash</a>
+
+ACCESS_TOKEN="s9SSssS0sSSSss4sSsS0Ssss6SsssSs501SsSsSSSSsSsSss7SsSSsSssSsSsSs9sssS2SSSs_1s_0s5s7S5"
+CHAT_ID="-55555555555555"
+
+SUBJECT="$1"
+MESSAGE="$2"
+
+echo "$(date): Скрипт ЗАПУЩЕН" >> /tmp/max_debug.log
+
+<a class="neonText1"># Экранируем для JSON БЕЗОПАСНО</a>
+TEXT=$(echo -e "$SUBJECT\n\n$MESSAGE" | jq -sR .)
+
+curl -sS -w "HTTP%{http_code}" -X POST \
+  "https://platform-api.max.ru/messages?chat_id=${CHAT_ID}" \
+  -H "Authorization: ${ACCESS_TOKEN}" \
+  -H "Content-Type: application/json" \
+  --data-binary "{\"text\":${TEXT}}" \
+  -o /tmp/curl_response.html 2>/tmp/curl_error.log
+
+RESPONSE_CODE="${?}"
+echo "$(date): RESPONSE: $RESPONSE_CODE" >> /tmp/max_debug.log
+<a class="neonText1">--------------------------------------------------------------------------------------------------------------------------------------------------------------</a>
+chmod +x /usr/lib/zabbix/alertscripts/*.sh
+chown zabbix:zabbix /usr/lib/zabbix/alertscripts/*.sh
+<a class="neonText1">--------------------------------------------------------------------------------------------------------------------------------------------------------------</a>
+<a class="neonText1">Имя:</a> MAX
+<a class="neonText1">Тип:</a> Скрипт  
+<a class="neonText1">Имя скрипта:</a> max_notify.sh
+<a class="neonText1">Параметры:</a>
+{EVENT.NAME}
+{ALERT.MESSAGE}
+<a class="neonText1">Активировано ✅</a>
+<a class="neonText1">Шаблоны сообщений:
+
+1. Тип сообщения:</a> Проблема
+<a class="neonText1">Тема:</a> ❗️Появилась проблема❗️
+<a class="neonText1">Сообщение:</a>
+⬇
+• Проблема возникла {EVENT.DATE} в {EVENT.TIME} 
+
+• На устройстве: {HOST.NAME}
+
+• {HOST.DESCRIPTION}
+
+• {EVENT.NAME}
+
+• ID проблемы: {EVENT.ID} - {TRIGGER.URL}
+
+<a class="neonText1">2. Тип сообщения:</a> Восстановление проблемы
+<a class="neonText1">Тема:</a> ✅ Проблема решена ✅
+<a class="neonText1">Сообщение:</a>
+⬇
+• Проблема решена {EVENT.RECOVERY.DATE} в {EVENT.RECOVERY.TIME} за {EVENT.DURATION}
+
+• На устройстве: {HOST.NAME}
+
+• {HOST.DESCRIPTION}
+
+• {EVENT.NAME}
+
+• ID проблемы: {EVENT.ID} - {TRIGGER.URL}
+
+<a class="neonText1">3. Тип сообщения:</a> Обновление проблемы
+<a class="neonText1">Тема:</a> 🔄 Обновление проблемы 🔄
+<a class="neonText1">Сообщение:</a>
+⬇
+• Проблема появилась {EVENT.DATE} в {EVENT.TIME}
+
+• На устройстве: {HOST.NAME}
+
+• В элементе данных: {EVENT.NAME}
+
+• Пользователь {USER.FULLNAME} {EVENT.UPDATE.ACTION} problem at {EVENT.UPDATE.DATE} {EVENT.UPDATE.TIME}.
+
+• Проблема обновлена с сообщением: {EVENT.UPDATE.MESSAGE}.
+
+• Текущий статус проблемы: {EVENT.STATUS}.
+
+• Актуальность проблемы: {EVENT.ACK.STATUS}.
+
+<a class="neonText1">4. Тип сообщения:</a> Обнаружение
+<a class="neonText1">Тема:</a> 🔄 Обнаружение {HOST.NAME} 🔄 - {DISCOVERY.DEVICE.STATUS} - {DISCOVERY.DEVICE.IPADDRESS}
+<a class="neonText1">Сообщение:</a>
+-
+• Discovery rule: {DISCOVERY.RULE.NAME}
+
+• Device IP: {DISCOVERY.DEVICE.IPADDRESS}
+
+• Device DNS: {DISCOVERY.DEVICE.DNS}
+
+• Device status: {DISCOVERY.DEVICE.STATUS}
+
+• Device uptime: {DISCOVERY.DEVICE.UPTIME}
+
+• Device service name: {DISCOVERY.SERVICE.NAME}
+
+• Device service port: {DISCOVERY.SERVICE.PORT}
+
+• Device service status: {DISCOVERY.SERVICE.STATUS}
+
+• Device service uptime: {DISCOVERY.SERVICE.UPTIME}
+
+<a class="neonText1">5. Тип сообщения:</a> Авторегистрация
+<a class="neonText1">Тема:</a> 🖥 Авторегистрация устройства 🖥 {HOST.HOST}
+<a class="neonText1">Сообщение:</a>
+-
+• Host name: {HOST.HOST}
+
+• Host IP: {HOST.IP}
+
+• Agent port: {HOST.PORT}
+<a class="neonText1">--------------------------------------------------------------------------------------------------------------------------------------------------------------</a>
+<a class="neonText1">Пользователю создать оповещение аналогично Telegram:
+Тип:</a> MAX
+<a class="neonText1">Отправлять на:</a> -55555555555555
+<a class="neonText1">Когда активен:</a> 1-7,00:00-24:00
+<a class="neonText1">Использовать, если важность:</a>
+✅ Средняя
+✅ Высокая
+✅ Чрезвычайная
+Активировано ✅
+<a class="neonText1">--------------------------------------------------------------------------------------------------------------------------------------------------------------</a>
+<a class="neonText1">Оповещения > Действия > Действия триггеров > Создать действие:
+Имя:</a> MAX
+Активировано ✅
+<a class="neonText1">Добавить:</a> Операции, Операции восстановления, Операции обновления.
+<a class="neonText1">В каждой из операций добавить:</a> Отправка группам пользователей, Отправка пользователям, <a class="neonText1">Отправить через среду передачи:</a> MAX.
+Приостановить операции для симптомных проблем ✅
+Приостановить операции для подавленных проблем ✅
+Оповещение об отмененных эскалациях ✅
+<a class="neonText1">--------------------------------------------------------------------------------------------------------------------------------------------------------------</a>
+<a class="neonText1">Тестирование:</a>
+sudo -u zabbix /usr/lib/zabbix/alertscripts/max_notify.sh "Тест" "OK"
+cat /tmp/max_debug.log</a>
+</p>
+</div>
