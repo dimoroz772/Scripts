@@ -1,0 +1,539 @@
+Данный набор Ansible-скриптов создавался для ОС RedOS 8.0.~.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Все описанные ниже действия выполнялись под пользователем root
+------------
+Подключение к рабочим местам осуществлялось по уже раскинутым на рабочие места ssh-ключам
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat /etc/ansible/hosts |#|#| Пример конфигурационного файла:
+    
+# This is the default ansible 'hosts' file.
+#
+# It should live in /etc/ansible/hosts
+#
+#   - Comments begin with the '#' character
+#   - Blank lines are ignored
+#   - Groups of hosts are delimited by [header] elements
+#   - You can enter hostnames or ip addresses
+#   - A hostname/ip can be a member of multiple groups
+
+# Ex 1: Ungrouped hosts, specify before any group headers:
+
+## green.example.com
+## blue.example.com
+## 192.168.100.1
+## 192.168.100.10
+
+# Ex 2: A collection of hosts belonging to the 'webservers' group:
+
+## [webservers]
+## alpha.example.org
+## beta.example.org
+## 192.168.1.100
+## 192.168.1.110
+
+# If you have multiple hosts following a pattern, you can specify
+# them like this:
+
+## www[001:006].example.com
+
+# You can also use ranges for multiple hosts: 
+
+## db-[99:101]-node.example.com
+
+# Ex 3: A collection of database servers in the 'dbservers' group:
+
+## [dbservers]
+##
+## db01.intranet.mydomain.net
+## db02.intranet.mydomain.net
+## 10.25.1.56
+## 10.25.1.57
+
+
+# Ex4: Multiple hosts arranged into groups such as 'Debian' and 'openSUSE':
+
+## [Debian]
+## alpha.example.org
+## beta.example.org
+
+## [openSUSE]
+## green.example.com
+## blue.example.com
+
+[target_servers]
+#10.10.10.10
+
+[all:vars]
+ansible_user=root
+ansible_ssh_private_key_file=/root/.ssh/key
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat add_admin.yml |#|#| Пример скрипта для создания УЗ "admin":
+    
+---
+- name: Проверить и создать пользователя admin с паролем
+  hosts: all
+  gather_facts: false
+  become: true
+
+  vars:
+    username: "admin"
+    user_password_plain: "P@ssw0rD"
+
+  tasks:
+    - name: Захешировать пароль (SHA-512)
+      ansible.builtin.shell: "HISTFILE=/dev/null openssl passwd -6 '{{ user_password_plain }}'"
+      register: hashed_pass
+      changed_when: false
+
+    - name: Проверить, существует ли пользователь "admin"
+      ansible.builtin.shell: "HISTFILE=/dev/null id -u {{ username }}"
+      register: check_user
+      failed_when: false
+      changed_when: false
+
+    - name: Сообщить о существовании пользователя
+      ansible.builtin.debug:
+        msg: >-
+          {% if check_user.rc == 0 %}
+            Пользователь "{{ username }}" уже существует.
+          {% else %}
+            Пользователь "{{ username }}" отсутствует, будет создан.
+          {% endif %}
+
+    - name: Создать пользователя "admin", если он отсутствует
+      ansible.builtin.user:
+        name: "{{ username }}"
+        password: "{{ hashed_pass.stdout }}"
+        shell: /bin/bash
+        create_home: yes
+      when: check_user.rc != 0
+      register: create_user
+
+    - name: Сообщить о результате создания
+      ansible.builtin.debug:
+        msg: >-
+          {% if check_user.rc == 0 %}
+            Создание не выполнялось, пользователь "{{ username }}" уже есть.
+          {% elif create_user is defined and create_user.changed %}
+            Пользователь "{{ username }}" успешно создан с паролем.
+          {% else %}
+            При создании пользователя "{{ username }}" возникла ошибка.
+          {% endif %}
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat adm_group.yml |#|#| Пример скрипта для создания конфигурационного файла "adm_group" в каталоге "/etc/sudoers.d" с двумя строками
+"%admins@domen.local ALL=(ALL) NOPASSWD:ALL" и "%admins@domen.new.local ALL=(ALL) NOPASSWD:ALL".
+Содержимое данного конфигурационного файла отвечает за подключение к локальным администраторам на рабочей станции пользователей доменов "domen.local" и "domen.new.local",
+которые в свою очередь находятся в доменных группах "admins".
+Содержимое:
+
+---
+- name: Create sudoers.d/adm_group file
+  hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Ensure /etc/sudoers.d directory exists
+      file:
+        path: /etc/sudoers.d
+        state: directory
+        mode: '0755'
+
+    - name: Create adm_group file in /etc/sudoers.d
+      copy:
+        dest: /etc/sudoers.d/adm_group
+        content: |
+          %admins@domen.local ALL=(ALL) NOPASSWD:ALL
+          %admins@domen.new.local ALL=(ALL) NOPASSWD:ALL
+        mode: '0440'
+        validate: 'visudo -cf %s'
+
+    - name: Verify sudoers file syntax
+      command: visudo -c -f /etc/sudoers.d/adm_group
+      register: sudo_check
+      changed_when: false
+
+    - name: Fail if sudoers file has syntax errors
+      fail:
+        msg: "Syntax error in /etc/sudoers.d/adm_group. Check the file and run again."
+      when: sudo_check.rc != 0
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat allowed_users.yml |#|#| Данный скрипт автоматизирует удаление локальных пользователей Linux, кроме разрешённых(admin, nfsnobody, monitoring, nobody), с удалением их домашних каталогов.
+Разрешенные пользьователи прописываются в "vars: allowed_users:"
+Содержимое:
+
+---
+- name: Удаление лишних локальных пользователей вместе с домашними каталогами
+  hosts: all
+  gather_facts: false
+  become: true
+
+  vars:
+    allowed_users:
+      - admin
+      - nfsnobody
+      - monitoring
+      - nobody
+
+  tasks:
+
+    - name: Получить список локальных пользователей с UID >= 1000
+      shell: "awk -F: '$3 >= 1000 {print $1}' /etc/passwd"
+      register: local_users
+      changed_when: false
+      failed_when: false
+
+    - name: Выбрать лишние пользователи (не разрешённые и не доменные)
+      set_fact:
+        users_to_remove: "{{ local_users.stdout_lines | difference(allowed_users) | reject('search','@') | list }}"
+
+    - name: Сообщить лишние пользователи для удаления
+      debug:
+        msg: "Лишние пользователи, которые будут удалены: {{ users_to_remove }}"
+      when: users_to_remove | length > 0
+
+    - name: Подтвердить удаление
+      pause:
+        prompt: "Хотите удалить указанных пользователей и их домашние каталоги? (yes/no)"
+      register: user_confirm
+      when: users_to_remove | length > 0
+
+    - name: Удалить лишних пользователей вместе с домашними каталогами
+      user:
+        name: "{{ item }}"
+        state: absent
+        remove: yes
+      loop: "{{ users_to_remove }}"
+      when: user_confirm.user_input == 'yes'
+
+    - name: Сообщить, что удаление отменено
+      debug:
+        msg: "Удаление пользователей отменено пользователем."
+      when: users_to_remove | length > 0 and user_confirm.user_input != 'yes'
+
+    - name: Сообщить, что лишних пользователей нет
+      debug:
+        msg: "Лишние локальные пользователи отсутствуют, удаление не требуется."
+      when: users_to_remove | length == 0
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat auth_cli_ssh.yml |#|#| Данный скрипт предназначен для автоматической замены SSH-ключа root-пользователя
+Содержимое:
+
+---
+- name: Замена SSH-ключа на целевых АРМ
+  hosts: all
+  gather_facts: false
+  strategy: free   # параллельное выполнение по доступным хостам
+  vars:
+    # Новый публичный ключ (в одну строку)
+    new_ssh_key: "ssh-ed25519 keykeykeykeykeykeykeykeykeykeykeykeykeykeykeykeykeykey root@user"
+
+  tasks:
+
+    - block:
+
+        - name: Проверить наличие authorized_keys
+          ansible.builtin.shell: "HISTFILE=/dev/null test -f /root/.ssh/authorized_keys"
+          register: auth_file
+          failed_when: false
+          changed_when: false
+
+        - name: Прочитать текущий ключ (если файл существует)
+          ansible.builtin.shell: "HISTFILE=/dev/null cat /root/.ssh/authorized_keys"
+          register: current_key_raw
+          when: auth_file.rc == 0
+          failed_when: false
+          changed_when: false
+
+        - name: Заменить ключ при несовпадении
+          ansible.builtin.shell: |
+            HISTFILE=/dev/null bash -c 'echo "{{ new_ssh_key }}" > /root/.ssh/authorized_keys'
+          when: >
+            (auth_file.rc != 0) or
+            (current_key_raw.stdout | trim != new_ssh_key)
+          changed_when: true
+
+        - name: Сообщить результат
+          ansible.builtin.debug:
+            msg: >-
+              {% if auth_file.rc != 0 %}
+                Файл authorized_keys отсутствовал, новый ключ записан.
+              {% elif current_key_raw.stdout | trim != new_ssh_key %}
+                Старый ключ заменен на новый.
+              {% else %}
+                Ключ совпадает, изменений не требуется.
+              {% endif %}
+
+      rescue:
+        - name: Хост недоступен, продолжаем с другими
+          ansible.builtin.debug:
+            msg: "Хост {{ inventory_hostname }} недоступен, пропускаем."
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat auth_cli_ssh.yml |#|#| Данный скрипт полностью очищает историю команд Bash на всех целевых хостах.
+Содержимое:
+
+---
+- name: Очистка истории у всех пользователей
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Очистить историю у существующих пользователей
+      ansible.builtin.shell: |
+        for u in $(cut -d: -f6 /etc/passwd | sort -u); do
+          if [ -d "$u" ]; then
+            > "$u/.bash_history" 2>/dev/null || true
+            rm -f "$u/.bash_history" 2>/dev/null || true
+          fi
+        done
+        # очистка истории root
+        > /root/.bash_history 2>/dev/null || true
+        rm -f /root/.bash_history 2>/dev/null || true
+      args:
+        executable: /bin/bash
+
+    - name: Очистить историю в /etc/skel (для новых пользователей)
+      ansible.builtin.shell: |
+        > /etc/skel/.bash_history 2>/dev/null || true
+        rm -f /etc/skel/.bash_history 2>/dev/null || true
+      args:
+        executable: /bin/bash
+
+    - name: Очистить буфер истории текущего сеанса
+      ansible.builtin.shell: |
+        export HISTFILE=/dev/null
+        history -c
+      args:
+        executable: /bin/bash
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat locked_grub.yml |#|#| Данный скрипт добавляет пароль суперпользователя в GRUB.
+Содержимое:
+
+---
+- name: Добавить пароль в GRUB без пересоздания файла и записи в history
+  hosts: all
+  gather_facts: false
+  become: true
+
+  vars:
+    grub_custom_file: "/etc/grub.d/40_custom"
+    grub_superuser: 'set superusers="root"'
+    grub_password: 'password_pbkdf2 root grub.pbkdf2.sha512.10000.XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  tasks:
+    - name: Убедиться, что в {{ grub_custom_file }} есть строка с superusers
+      ansible.builtin.lineinfile:
+        path: "{{ grub_custom_file }}"
+        line: "{{ grub_superuser }}"
+        insertafter: EOF
+        state: present
+      register: add_superuser
+
+    - name: Убедиться, что в {{ grub_custom_file }} есть строка с паролем
+      ansible.builtin.lineinfile:
+        path: "{{ grub_custom_file }}"
+        line: "{{ grub_password }}"
+        insertafter: EOF
+        state: present
+      register: add_password
+
+    - name: Пересоздать grub.cfg для BIOS
+      ansible.builtin.shell: HISTFILE=/dev/null grub2-mkconfig -o /boot/grub2/grub.cfg
+      args:
+        executable: /bin/bash
+      when: add_superuser.changed or add_password.changed
+
+    - name: Пересоздать grub.cfg для UEFI
+      ansible.builtin.shell: HISTFILE=/dev/null grub2-mkconfig -o /boot/efi/EFI/redos/grub.cfg
+      args:
+        executable: /bin/bash
+      when: add_superuser.changed or add_password.changed
+
+    - name: Сообщить результат настройки
+      ansible.builtin.debug:
+        msg: >-
+          {% if add_superuser.changed or add_password.changed %}
+            В {{ grub_custom_file }} добавлены новые строки и grub обновлён.
+          {% else %}
+            Строки уже присутствовали в {{ grub_custom_file }}, изменений не потребовалось.
+          {% endif %}
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat passwd_root.yml |#|#| Данный скрипт проверяет хэш пароля для пользователя root и, если он не совпадает с заранее рассчитанным хэшем, меняет пароль на заданный.
+Содержимое: 
+    
+---
+- name: Проверить и при необходимости установить пароль root
+  hosts: all
+  become: true
+  vars:
+    root_password_plain: "P@ssw0rD"
+    root_password_hash: "{{ root_password_plain | password_hash('sha512', 'fixedsalt') }}"
+
+  tasks:
+    - name: Считать текущий хэш пароля root
+      command: grep '^root:' /etc/shadow
+      register: shadow_entry
+      changed_when: false
+
+    - name: Проверить, совпадает ли пароль root
+      set_fact:
+        root_password_matches: "{{ shadow_entry.stdout.split(':')[1] == root_password_hash }}"
+
+    - name: Сообщить о проверке пароля
+      debug:
+        msg: >-
+          {% if root_password_matches %}
+            Пароль root уже совпадает с нужным.
+          {% else %}
+            Пароль root отличается, будет выполнена смена.
+          {% endif %}
+
+    - name: Установить пароль root (только если отличается)
+      user:
+        name: root
+        password: "{{ root_password_hash }}"
+      when: not root_password_matches
+      register: passwd_result
+
+    - name: Сообщить результат смены
+      debug:
+        msg: >-
+          {% if passwd_result is defined and passwd_result.changed %}
+            Пароль root был изменён.
+          {% elif root_password_matches %}
+            Пароль root уже совпадает с нужным, изменений не требуется.
+          {% else %}
+            Ошибка при проверке пароля.
+          {% endif %}
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat scan_user.yml |#|#| Данный скрипт проверяет, существует ли в системе пользователь "user", и если да — выводит дату его последнего входа в систему.
+Содержимое:
+
+---
+- name: Проверить пользователя и дату последнего входа
+  hosts: all
+  gather_facts: false
+  become: false
+
+  tasks:
+    - name: Проверить, существует ли пользователь "user"
+      ansible.builtin.shell: "id -u user"
+      register: check_user
+      failed_when: false
+      changed_when: false
+
+    - name: Сообщить о существовании пользователя
+      ansible.builtin.debug:
+        msg: >-
+          {% if check_user.rc == 0 %}
+            Пользователь "user" существует в системе.
+          {% else %}
+            Пользователь "user" отсутствует в системе.
+          {% endif %}
+
+    - name: Получить дату последнего входа пользователя "user", если он существует
+      ansible.builtin.shell: "lastlog -u user"
+      register: lastlog_output
+      when: check_user.rc == 0
+      failed_when: false
+      changed_when: false
+
+    - name: Показать дату последнего входа
+      ansible.builtin.debug:
+        var: lastlog_output.stdout
+      when: check_user.rc == 0
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat repo_redos8.yml |#|#| Данный скрипт перезаписывает файлы репозиториев RedOS — /etc/yum.repos.d/RedOS-Base.repo и /etc/yum.repos.d/RedOS-Updates.repo.
+Содержимое: 
+    
+---
+- name: Перезаписать RedOS репозитории
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Перезаписать /etc/yum.repos.d/RedOS-Base.repo
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/RedOS-Base.repo
+        content: |
+          [base]
+          name=RedOS - Base
+          #baseurl=https://repo1.red-soft.ru/redos/8.0/$basearch/os,https://mirror.yandex.ru/redos/8.0/$basearch/os,http://repo.red-soft.ru/redos/8.0/$basearch/os
+          gpgcheck=1
+          gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-RED-SOFT
+          enabled=1
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Перезаписать /etc/yum.repos.d/RedOS-Updates.repo
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/RedOS-Updates.repo
+        content: |
+          [updates]
+          name=RedOS - Updates
+          #baseurl=https://repo1.red-soft.ru/redos/8.0/$basearch/updates,https://mirror.yandex.ru/redos/8.0/$basearch/updates,http://repo.red-soft.ru/redos/8.0/$basearch/updates
+          gpgcheck=1
+          gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-RED-SOFT
+          enabled=1
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Сообщить результат
+      ansible.builtin.debug:
+        msg: "Файлы RedOS-Base.repo и RedOS-Updates.repo успешно перезаписаны."
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+cat repo_app_redos.yml |#|#| Данный скрипт создает файл /etc/yum.repos.d/App.repo, очищает историю команд текущей сессии, выводит сообщение, подтверждающее успешное создание файла и очистку истории.
+Содержимое:
+    
+---
+- name: Создать App.repo и очистить историю
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Создать /etc/yum.repos.d/App.repo
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/App.repo
+        content: |
+          [r7-office]
+          name=R7-Office
+          baseurl=https://10.10.10.10/outside_software_redos/r7-office/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://10.10.10.10/outside_software_redos/r7-office/RPM-GPG-KEY-R7-OFFICE.public
+          sslverify=0
+
+          [trueconf]
+          name=TrueConf
+          baseurl=https://10.10.10.10/outside_software_redos/trueconf/8.0.2/x86_64/trueconf-8.0.2/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://10.10.10.10/outside_software_redos/trueconf/RPM-GPG-KEY-trueconf
+
+          [yandex-browser]
+          name=Yandex-Browser
+          baseurl=https://10.10.10.10/outside_software_redos/yandex-browser/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://10.10.10.10/outside_software_redos/yandex-browser/YANDEX-BROWSER-KEY.GPG
+
+          [Fonts]
+          name=Fonts
+          baseurl=https://10.10.10.10/outside_software_redos/fonts/
+          enabled=1
+          gpgcheck=0
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Очистить историю текущей сессии
+      ansible.builtin.shell: "export HISTFILE=/dev/null && history -c"
+
+    - name: Сообщить результат
+      ansible.builtin.debug:
+        msg: "/etc/yum.repos.d/App.repo успешно создан и история очищена."
