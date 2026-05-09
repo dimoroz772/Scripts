@@ -1,0 +1,100 @@
+<head>
+  <title>Bash-NRR</title>
+  <link rel="shortcut icon" href="./bash.png" type="image/png">
+</head>
+ <head>
+  <meta charset="utf-8">
+ </head>
+<style>
+.neonText1 {
+  color: #87CEFA;
+  text-shadow:
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1,
+      0 0 1px #4169E1;
+}
+.neonText2 {
+  color: #00FF00;
+  text-shadow:
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400,
+      0 0 1px #006400;
+}
+/* Additional styling */
+body{
+    background-color: black;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #cfcfcf;
+}
+a {
+    text-decoration: none;
+}
+p {
+  text-indent: 1.5em;
+  font-family: monospace;
+  font-weight: 500;
+  white-space: pre;
+  line-height: 2;
+  letter-spacing: 1px;
+}
+</style>
+<div class="container">
+<p class="neonText2">
+<a class="neonText1">#!/usr/bin/env bash</a>
+
+output="$(needs-restarting -r 2>&1)"
+rc=$?
+
+if printf '%s\n' "$output" | grep -q <a class="neonText1">"Требуется перезагрузка"</a>; then
+    zenity --question \
+        --title=<a class="neonText1">"Требуется перезагрузка"</a> \
+        --text=<a class="neonText1">"На вашем компьютере установлены обновления. Чтобы изменения применились, нужно перезагрузить компьютер. Без перезагрузки возможна некорректная работа приложений."</a> \
+        --ok-label=<a class="neonText1">"Перезагрузить сейчас"</a> \
+        --cancel-label=<a class="neonText1">"Перезагрузить позже"</a> \
+        --window-icon=dialog-information \
+        --width=520 \
+        --height=140
+
+    if [ $? -eq 0 ]; then
+        reboot now
+    fi
+elif printf '%s\n' "$output" | grep -q <a class="neonText1">"Перезагрузка не должна потребоваться"</a>; then
+    exit 0
+fi
+
+exit 0
+<a class="neonText1">--------------------------------------------------------------------------------------------------------------------------------------------------------------</a>
+<a class="neonText1">Тестирование:</a>
+chmod +x Reboot_dialog_box.sh
+./Reboot_dialog_box.sh
+<a class="neonText1">Если на ПК установлены пакеты "dnf-utils" и "zenity", то все должно работать.</a>
+<a class="neonText1">--------------------------------------------------------------------------------------------------------------------------------------------------------------</a>
+<a class="neonText1">P.S.
+Данный скрипт писался для корректного обновления ПК средствами РЕД-АДМ. Обновление ПК состоит из двух конфигураций. Изначатьно создается и выполняется
+конфигурация по обновлению ОС RedOS(просто выполнение команды "dnf upgrade -y"), после чего создается дополнительно ещё одна(вот эта) конфигурация для
+выполнения команды "needs-restarting -r" в ОС RedOS, в которой уже установлены обновления, но сама ОС не перезагружена после их установки.
+Если вывод команды "needs-restarting -r" в выводе показывает в тексте слова "Требуется перезагрузка", то выходит диалоговое окно с текстовкой "На вашем
+компьютере установлены обновления. Чтобы изменения применились, нужно перезагрузить компьютер. Без перезагрузки возможна некорректная работа приложений." и
+ниже кнопками "Перезагрузить сейчас" и "Перезагрузить позже".
+При нажатии на кнопку "Перезагрузить сейчас" на ПК сразу же выполняется команда "reboot now", а при нажатии на кнопку "Перезагрузить позже", диалоговое окно
+просто закрывается.
+Если вывод команды "needs-restarting -r" в выводе показывает в тексте слова "Перезагрузка не должна потребоваться", то диалоговое окно не появляется и
+конфигурация считается отработанной.</a>
+</a>
+</p>
+</div>
